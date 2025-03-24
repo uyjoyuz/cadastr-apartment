@@ -62,13 +62,17 @@
                 const data = response.data;
                 if (data.status === "FAIL") return true;
 
-            
+                let category = data.data.buildingSectionTypeValue !== undefined ? data.data.buildingSectionTypeValue : "Квартира";
+                let usableArea = data.data.totalUsableArea !== undefined ? Number(data.data.totalUsableArea).toFixed(2) : "Yo'q";
+                let floor = data.data.floor !== undefined ? data.data.floor : "Yo'q"
+                if (data.data.totalUsableArea === undefined) { category = "Нотурар" }             
+                    
                 const row = `<tr class="border border-gray-300">
                     <td class="border border-gray-300 p-2">${data.data.houseNumber}</td>
                     <td class="border border-gray-300 p-2">${data.data.cadastreNumber}</td>
-                    <td class="border border-gray-300 p-2">${data.data.buildingSectionTypeValue}</td>
-                    <td class="border border-gray-300 p-2">${data.data.floor}</td>
-                    <td class="border border-gray-300 p-2">${data.data.totalUsableArea !== undefined ? Number(data.data.totalUsableArea).toFixed(2) : 0}</td>
+                    <td class="border border-gray-300 p-2">${category}</td>
+                    <td class="border border-gray-300 p-2">${floor}</td>
+                    <td class="border border-gray-300 p-2">${usableArea}</td>
                 </tr>`;
                 document.getElementById("dataBody").innerHTML += row;
 
