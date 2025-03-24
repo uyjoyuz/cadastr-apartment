@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logotip.png">
+    <title>Kvartira kadastr ma'lumotlari</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-800">Kvartira kadastr ma'lumotlari</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-gray-700 text-sm font-medium mb-1">Kadastr raqami:</label>
+                <input type="text" id="cadastreInput" placeholder="22:11:02:03:01:0024"
+                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-medium mb-1">Token:</label>
+                <div class="relative">
+                    <input type="text" id="tokenInput" placeholder="Tokenni kiriting"
+                        class="w-full p-2 border rounded-lg pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="clearToken()" 
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500">
+                        &#10006;
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="processApartments()"
+            class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
+            Ma'lumotni olish
+        </button>
+
+        <div class="overflow-x-auto mt-6">
+            <table class="w-full border-collapse border border-gray-300">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="border border-gray-300 p-2">Kvartira raqami</th>
+                        <th class="border border-gray-300 p-2">Kadastr raqami</th>
+                        <th class="border border-gray-300 p-2">Kategoriya</th>
+                        <th class="border border-gray-300 p-2">Qavat</th>
+                        <th class="border border-gray-300 p-2">Maydon (m2)</th>
+                    </tr>
+                </thead>
+                <tbody id="dataBody" class="bg-white"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function fetchApartmentData(apartmentNumber, cadastrePrefix, token) {
+            try {
+                const response = await axios.get(`https://api.uy-joy.uz/api/map/real-estate/${cadastrePrefix}:0001:${String(apartmentNumber).padStart(3, "0")}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const data = response.data;
+                if (data.status === "FAIL") return true;
+
+                const row = `<tr class="border border-gray-300">
+                    <td class="border border-gray-300 p-2">${data.data.houseNumber}</td>
+                    <td class="border border-gray-300 p-2">${data.data.cadastreNumber}</td>
+                    <td class="border border-gray-300 p-2">${data.data.buildingSectionTypeValue}</td>
+                    <td class="border border-gray-300 p-2">${data.data.floor}</td>
+                    <td class="border border-gray-300 p-2">${data.data.totalUsableArea.toFixed(2)}</td>
+                </tr>`;
+                document.getElementById("dataBody").innerHTML += row;
+
+                return false;
+            } catch (error) {
+                console.error("Xatolik:", error);
+                return true;
+            }
+        }
+
+        async function processApartments() {
+            const cadastrePrefix = document.getElementById("cadastreInput").value;
+            const token = document.getElementById("tokenInput").value;
+            if (!cadastrePrefix || !token) {
+                alert("Kadastr raqami va tokenni kiriting!");
+                return;
+            }
+
+            document.getElementById("dataBody").innerHTML = "";
+            let apartmentNumber = 1;
+            let consecutiveFailCount = 0;
+
+            while (consecutiveFailCount <= 3) {
+                const isFail = await fetchApartmentData(apartmentNumber, cadastrePrefix, token);
+
+                if (isFail) {
+                    consecutiveFailCount++;
+                } else {
+                    consecutiveFailCount = 0;
+                }
+
+                apartmentNumber++;
+            }
+            console.log("Jarayon tugadi: ketma-ket 3 marta 'FAIL'.");
+        }
+
+        function clearToken() {
+            document.getElementById("tokenInput").value = "";
+        }
+    </script>
+</body>
+</html>
