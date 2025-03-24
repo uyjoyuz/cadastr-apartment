@@ -62,12 +62,13 @@
                 const data = response.data;
                 if (data.status === "FAIL") return true;
 
+            
                 const row = `<tr class="border border-gray-300">
                     <td class="border border-gray-300 p-2">${data.data.houseNumber}</td>
                     <td class="border border-gray-300 p-2">${data.data.cadastreNumber}</td>
                     <td class="border border-gray-300 p-2">${data.data.buildingSectionTypeValue}</td>
                     <td class="border border-gray-300 p-2">${data.data.floor}</td>
-                    <td class="border border-gray-300 p-2">${data.data.totalUsableArea.toFixed(2)}</td>
+                    <td class="border border-gray-300 p-2">${data.data.totalUsableArea !== undefined ? Number(data.data.totalUsableArea).toFixed(2) : 0}</td>
                 </tr>`;
                 document.getElementById("dataBody").innerHTML += row;
 
